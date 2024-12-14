@@ -1,62 +1,87 @@
-let currentPlayer = "X"; // Jogador atual
-let board = ["", "", "", "", "", "", "", "", ""]; // Tabuleiro inicial vazio
-const winningCombinations = [
-  [0, 1, 2], [3, 4, 5], [6, 7, 8], // Linhas
-  [0, 3, 6], [1, 4, 7], [2, 5, 8], // Colunas
-  [0, 4, 8], [2, 4, 6]             // Diagonais
-];
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Velha</title>
+    <style>
+        .tabuleiro { display: grid; grid-template-columns: repeat(3, 100px); grid-gap: 5px; }
+        .celula { width: 100px; height: 100px; text-align: center; line-height: 100px; font-size: 24px; border: 1px solid #000; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Jogo da Velha: Jogador vs Máquina</h1>
+    <div id="tabuleiro" class="tabuleiro"></div>
+    <script>
+        let tabuleiro = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '];
+        let jogador = 'X';  // Jogador começa
+        let maquina = 'O';
 
-const cells = document.querySelectorAll(".cell");
-const messageElement = document.querySelector(".message");
+        // Função para desenhar o tabuleiro
+        function desenharTabuleiro() {
+            const tabuleiroDiv = document.getElementById('tabuleiro');
+            tabuleiroDiv.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const celula = document.createElement('div');
+                celula.classList.add('celula');
+                celula.textContent = tabuleiro[i];
+                celula.onclick = () => jogar(i);
+                tabuleiroDiv.appendChild(celula);
+            }
+        }
 
-// Adicionar evento de clique para cada célula
-cells.forEach(cell => {
-  cell.addEventListener("click", handleCellClick);
-});
+        // Função para jogar
+        function jogar(posicao) {
+            if (tabuleiro[posicao] !== ' ') return;  // Verifica se a posição está vazia
 
-// Função chamada quando o jogador clica em uma célula
-function handleCellClick(event) {
-  const cell = event.target;
-  const index = cell.getAttribute("data-index");
+            tabuleiro[posicao] = jogador;
+            desenharTabuleiro();
+            
+            if (verificarVitoria(jogador)) {
+                alert('Você ganhou!');
+                return;
+            }
 
-  if (board[index] === "") {
-    board[index] = currentPlayer;
-    cell.textContent = currentPlayer;
-    cell.classList.add("taken");
+            // Se o jogo não terminou, a máquina joga
+            if (!tabuleiro.includes(' ')) {
+                alert('Empate!');
+                return;
+            }
 
-    if (checkWin()) {
-      messageElement.textContent = `Jogador ${currentPlayer} venceu!`;
-      endGame();
-    } else if (board.every(cell => cell !== "")) {
-      messageElement.textContent = "Empate!";
-      endGame();
-    } else {
-      currentPlayer = currentPlayer === "X" ? "O" : "X"; // Alterna jogador
-      messageElement.textContent = `Vez do jogador ${currentPlayer}`;
-    }
-  }
-}
+            // Máquina faz a jogada (aleatória)
+            jogadaMaquina();
+        }
 
-// Verificar se há um vencedor
-function checkWin() {
-  return winningCombinations.some(combination => {
-    return combination.every(index => board[index] === currentPlayer);
-  });
-}
+        // Função para a máquina jogar
+        function jogadaMaquina() {
+            let posicao = Math.floor(Math.random() * 9);
+            while (tabuleiro[posicao] !== ' ') {
+                posicao = Math.floor(Math.random() * 9);
+            }
+            tabuleiro[posicao] = maquina;
+            desenharTabuleiro();
 
-// Finalizar o jogo
-function endGame() {
-  cells.forEach(cell => cell.removeEventListener("click", handleCellClick));
-}
+            if (verificarVitoria(maquina)) {
+                alert('A máquina ganhou!');
+                return;
+            }
+        }
 
-// Reiniciar o jogo
-function resetGame() {
-  board = ["", "", "", "", "", "", "", "", ""];
-  currentPlayer = "X";
-  cells.forEach(cell => {
-    cell.textContent = "";
-    cell.classList.remove("taken");
-    cell.addEventListener("click", handleCellClick);
-  });
-  messageElement.textContent = "Vez do jogador X";
-}
+        // Função para verificar vitória
+        function verificarVitoria(jogador) {
+            const combinacoes = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],  // Linhas
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],  // Colunas
+                [0, 4, 8], [2, 4, 6]               // Diagonais
+            ];
+
+            return combinacoes.some(combinacao => 
+                combinacao.every(i => tabuleiro[i] === jogador)
+            );
+        }
+
+        // Inicializa o jogo
+        desenharTabuleiro();
+    </script>
+</body>
+</html>
